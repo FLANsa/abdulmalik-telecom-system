@@ -11,7 +11,7 @@ services:
       - key: APP_VERSION
         value: "2.0.0"
       - key: COMPANY_NAME
-        value: الركبي للاتصالات
+        value: عبدالملك للاتصالات
       - key: COMPANY_NAME_EN
         value: Abdulmalik Telecom
       - key: COMPANY_ADDRESS

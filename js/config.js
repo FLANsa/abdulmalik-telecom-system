@@ -1,13 +1,13 @@
 /**
  * Configuration and Constants
- * الركبي للاتصالات - Phone Store Management System
+ * عبدالملك للاتصالات - Phone Store Management System
  */
 
 // VAT Configuration for Saudi Arabia
 const CONFIG = {
     VAT_RATE: 0.15, // 15% VAT rate
     COMPANY_INFO: {
-        name: "الركبي للاتصالات",
+        name: "عبدالملك للاتصالات",
         vatNumber: "311362508900003",
         address: "القصيم بريدة، المملكة العربية السعودية",
         phone: "0591813149"
