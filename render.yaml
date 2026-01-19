@@ -11,11 +11,11 @@ services:
       - key: APP_VERSION
         value: "2.0.0"
       - key: COMPANY_NAME
-        value: عبدالملك للاتصالات
+        value: الركبي للاتصالات
       - key: COMPANY_NAME_EN
         value: Abdulmalik Telecom
       - key: COMPANY_ADDRESS
-        value: الرياض، المملكة العربية السعودية
+        value: القصيم بريدة، المملكة العربية السعودية
       - key: COMPANY_PHONE
         value: "0591813149"
       - key: COMPANY_EMAIL

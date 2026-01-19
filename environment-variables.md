@@ -18,9 +18,9 @@ APP_VERSION=2.0.0
 APP_DESCRIPTION=نظام إدارة متجر الجوالات
 
 # Company Information
-COMPANY_NAME=عبدالملك للاتصالات
+COMPANY_NAME=الركبي للاتصالات
 COMPANY_NAME_EN=Abdulmalik Telecom
-COMPANY_ADDRESS=الرياض، المملكة العربية السعودية
+COMPANY_ADDRESS=القصيم بريدة، المملكة العربية السعودية
 COMPANY_PHONE=0591813149
 COMPANY_EMAIL=support@abdulmalik.com
 COMPANY_VAT_NUMBER=311362508900003
