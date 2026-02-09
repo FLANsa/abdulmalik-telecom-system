@@ -8,6 +8,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2c3e50">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/mobile.css">
 
   <style>
     body { font-family: 'Cairo', sans-serif; background-color: #f8f9fa; padding-top: 70px; }
@@ -488,18 +494,24 @@
           // إضافة هاتف مستعمل جديد
           if(window.storage && window.storage.isFirebaseAvailable){
             const id = await window.storage.addPhone(phoneData);
+            if(id){ phoneData.id = id; localStorage.setItem('lastAddedPhone', JSON.stringify(phoneData)); }
             savedOK = !!id;
           }else{
             const arr = JSON.parse(localStorage.getItem('phones')||'[]'); 
             phoneData.id=Date.now().toString(); 
             arr.push(phoneData);
             localStorage.setItem('phones', JSON.stringify(arr));
+            localStorage.setItem('lastAddedPhone', JSON.stringify(phoneData));
             savedOK = true;
           }
 
           if(savedOK){
             const shouldPrint = confirm('✅ تم إضافة الهاتف المستعمل!\n\nهل تريد طباعة الباركود؟');
-            if(shouldPrint){ window.location.href = `print_barcode.html?phone_number=${encodeURIComponent(phoneData.phone_number)}`; }
+            if(shouldPrint){
+              const q = new URLSearchParams({ phone_number: phoneData.phone_number });
+              if(phoneData.id) q.set('id', phoneData.id);
+              window.location.href = `print_barcode.html?${q.toString()}`;
+            }
             return true;
           }
         }

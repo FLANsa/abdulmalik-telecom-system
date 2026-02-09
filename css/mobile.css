@@ -1,0 +1,63 @@
+/**
+ * Mobile & PWA layout and touch improvements
+ * Safe areas, tap targets, and input zoom prevention
+ */
+
+/* Safe area for notched devices (e.g. iPhone) */
+body {
+  padding-top: calc(70px + env(safe-area-inset-top, 0px));
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+/* Prevent iOS zoom on input focus: 16px minimum */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Comfortable touch targets (min 44px) */
+@media (max-width: 768px) {
+  .btn,
+  .navbar .nav-link,
+  a.btn,
+  button:not([type="hidden"]) {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .navbar .navbar-brand,
+  .navbar .nav-link {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* Spacing and typography on small screens */
+@media (max-width: 768px) {
+  .container,
+  .container-fluid {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  h1, .h1 {
+    font-size: 1.5rem;
+  }
+
+  h2, .h2 {
+    font-size: 1.25rem;
+  }
+
+  .card-body,
+  .list-group-item {
+    padding: 0.75rem 1rem;
+  }
+}

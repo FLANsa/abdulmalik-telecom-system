@@ -7,6 +7,12 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2c3e50">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/mobile.css">
 
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -171,6 +177,45 @@
     generateBarcode(phone_number || '-');
   }
 
+  async function findPhoneById(phoneId){
+    if(!phoneId) return null;
+
+    // 1) Fast handoff from add page
+    try{
+      const last = JSON.parse(localStorage.getItem('lastAddedPhone')||'null');
+      if(last && (String(last.id)===String(phoneId))){
+        return last;
+      }
+    }catch{}
+
+    // 2) Firebase / storage
+    try{
+      if(window.storage && window.storage.isFirebaseAvailable){
+        const all = await window.storage.getPhones();
+        if(all){
+          if(Array.isArray(all)){
+            const found = all.find(p => String(p.id)===String(phoneId));
+            if(found) return found;
+          }else if(typeof all==='object'){
+            const found = Object.values(all).find(p => String(p.id)===String(phoneId));
+            if(found) return found;
+          }
+        }
+      }
+    }catch(e){ console.warn('Firebase lookup by id failed:', e); }
+
+    // 3) LocalStorage fallback
+    try{
+      const arr = JSON.parse(localStorage.getItem('phones')||'[]');
+      if(Array.isArray(arr)){
+        const found = arr.find(p => String(p.id)===String(phoneId));
+        if(found) return found;
+      }
+    }catch{}
+
+    return null;
+  }
+
   async function findPhoneByNumber(phoneNumber){
     if(!phoneNumber) return null;
 
@@ -221,7 +266,17 @@
     await new Promise(r => setTimeout(r, 300));
 
     const urlParams = new URLSearchParams(window.location.search);
+    const idParam = urlParams.get('id');
     const pn = urlParams.get('phone_number') || urlParams.get('edit');
+
+    // Prefer lookup by unique id when present (fixes duplicate barcode showing wrong device)
+    if(idParam){
+      const phoneById = await findPhoneById(idParam);
+      if(phoneById){
+        fillSticker(valuesFromPhone(phoneById));
+        return;
+      }
+    }
 
     if(pn){
       const phone = await findPhoneByNumber(pn);
