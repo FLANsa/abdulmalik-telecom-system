@@ -117,12 +117,9 @@
       return;
     }
 
-    // بيانات المستخدمين الافتراضية (يمكن تطويرها لاحقاً)
-    // كلمات المرور مخزنة كقِيَم SHA-256 (ليس نصاً واضحاً)
-    // كلمة المرور لكلا المستخدمين: 123123
     const validUsers = [
       { username: 'admin', passwordHash: '96cae35ce8a9b0244178bf28e4966c2ce1b8385723a96a6b838858cdd6ca0a1e', name: 'مدير النظام', role: 'admin', dashboard: 'dashboard.html' },
-      { username: 'user',  passwordHash: '96cae35ce8a9b0244178bf28e4966c2ce1b8385723a96a6b838858cdd6ca0a1e', name: 'موظف المبيعات', role: 'user',  dashboard: 'limited_dashboard.html' }
+      { username: 'mlook', passwordHash: '1e2b62160c3085b940451c8d3d324d665aeb7712bef0179c7a5e1cb3c047bb37', name: 'موظف المبيعات', role: 'user', dashboard: 'limited_dashboard.html' }
     ];
 
     // حساب SHA-256 محلياً لكلمة المرور المدخلة ثم المقارنة مع المخزن
