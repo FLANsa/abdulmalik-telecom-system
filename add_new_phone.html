@@ -371,12 +371,6 @@
       }catch(e){ console.error(e); alert('❌ حدث خطأ في الحذف.'); }
     }
 
-    function generatePhoneNumber(){
-      let last = localStorage.getItem('lastDeviceNumber')||'0';
-      const next = (parseInt(last,10)+1); localStorage.setItem('lastDeviceNumber', String(next));
-      return String(next).padStart(6,'0');
-    }
-
     async function savePhoneToFirebase(){
       try{
         // Validate customer ID and phone number
@@ -395,7 +389,10 @@
           return false;
         }
 
-        const phone_number = generatePhoneNumber();
+        // رقم الباركود: عند التعديل نبقى على الرقم الحالي؛ عند الإضافة من storage (Firebase عداد أو localStorage max+1)
+        const phone_number = (window.editingPhoneId && window.currentEditPhoneNumber)
+          ? window.currentEditPhoneNumber
+          : await (window.storage && window.storage.getNextPhoneNumber ? window.storage.getNextPhoneNumber() : Promise.resolve('000001'));
         const purchase_price = parseArabicNumber(document.getElementById('purchase_price').value);
         const selling_price = parseArabicNumber(document.getElementById('selling_price').value);
 
@@ -553,8 +550,9 @@
           document.title = 'تعديل هاتف جديد — عبدالملك للاتصالات';
           document.querySelector('h2').textContent = 'تعديل هاتف جديد';
           
-          // حفظ معرف الهاتف للتعديل
+          // حفظ معرف الهاتف ورقم الباركود للتعديل (لا نغيّر الرقم عند الحفظ)
           window.editingPhoneId = phone.id || phone.phone_number;
+          window.currentEditPhoneNumber = String(phone.phone_number || '');
           
           showAlert('info', 'تم تحميل بيانات الهاتف للتعديل');
         } else {

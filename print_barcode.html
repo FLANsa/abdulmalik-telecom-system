@@ -291,7 +291,7 @@
       }
     }
 
-    // No ?phone_number= : try lastAddedPhone directly (user came here manually after adding)
+    // No ?phone_number= or ?id= : try lastAddedPhone (مثلاً بعد إضافة هاتف من نفس الجلسة)
     try{
       const last = JSON.parse(localStorage.getItem('lastAddedPhone')||'null');
       if(last){
@@ -300,13 +300,9 @@
       }
     }catch{}
 
-    // Finally, generate a new label if nothing provided
-    const generated = (() => {
-      let last = localStorage.getItem('lastDeviceNumber')||'0';
-      const next = (parseInt(last,10)+1); localStorage.setItem('lastDeviceNumber', String(next));
-      return String(next).padStart(6,'0');
-    })();
-    fillSticker({ phone_number: generated, memory:'32GB', battery:'100' });
+    // لا نولّد رقماً جديداً من localStorage (لمنع التكرار والفجوات). نعرض رسالة ونملأ الملصق بشرح.
+    fillSticker({ phone_number: '—', memory: '—', battery: '—' });
+    alert('لم يُمرّر رقم جهاز.\n\nلطباعة باركود:\n• أضف هاتفاً من صفحة "إضافة هاتف جديد" أو "إضافة هاتف مستعمل" ثم اختر "طباعة الباركود"، أو\n• افتح الرابط مع رقم الجهاز: print_barcode.html?phone_number=رقم_الجهاز');
   }
 
   document.addEventListener('DOMContentLoaded', loadPhoneData);

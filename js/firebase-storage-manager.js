@@ -103,6 +103,25 @@ class FirebaseStorageManager {
   }
 
   /**
+   * توليد الرقم التالي الفريد لباركود الهاتف.
+   * مع Firebase: يستخدم عداداً في Firestore. مع localStorage: أقصى رقم موجود + 1.
+   * @returns {Promise<string>} رقم باركود من 6 أرقام
+   */
+  async getNextPhoneNumber() {
+    if (this.isFirebaseAvailable && typeof this.firebaseDB.getNextPhoneNumber === 'function') {
+      return await this.firebaseDB.getNextPhoneNumber();
+    }
+    const phones = await this.getPhones();
+    const list = Array.isArray(phones) ? phones : Object.values(phones || {});
+    let max = 0;
+    for (const p of list) {
+      const n = parseInt(String(p.phone_number || 0), 10);
+      if (!isNaN(n) && n > max) max = n;
+    }
+    return String(max + 1).padStart(6, '0');
+  }
+
+  /**
    * Phone management
    */
   async getPhones() {
@@ -185,7 +204,8 @@ class FirebaseStorageManager {
 
   async getPhoneByNumber(phoneNumber) {
     const phones = await this.getPhones();
-    return phones.find(p => p.phone_number === phoneNumber);
+    const pn = String(phoneNumber ?? '');
+    return (Array.isArray(phones) ? phones : Object.values(phones || {})).find(p => String(p.phone_number ?? '') === pn) || null;
   }
 
   async getPhoneBySerial(serialNumber) {

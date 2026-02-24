@@ -11,7 +11,8 @@ import {
   where, 
   orderBy,
   onSnapshot,
-  serverTimestamp 
+  serverTimestamp,
+  runTransaction 
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 class FirebaseDatabase {
@@ -21,14 +22,57 @@ class FirebaseDatabase {
   }
 
   // ===== إدارة الهواتف =====
+
+  /**
+   * توليد الرقم التالي الفريد لباركود الهاتف (مزامن عبر Firebase يمنع التكرار).
+   * يستخدم مستند عداد في مجموعة counters (counters/phones، حقل lastPhoneNumber).
+   * عند أول استخدام يُنشأ العداد ويبدأ من 1. للبيانات الحالية: أنشئ مستنداً يدوياً في Firebase
+   * بمجموعة counters ومعرّف phones وحقل lastPhoneNumber = أقصى رقم باركود موجود.
+   * @returns {Promise<string>} رقم باركود من 6 أرقام (مثل "000001")
+   */
+  async getNextPhoneNumber() {
+    const counterRef = doc(this.db, 'counters', 'phones');
+    const nextNum = await runTransaction(this.db, async (transaction) => {
+      const snap = await transaction.get(counterRef);
+      const current = (snap.exists() && snap.data().lastPhoneNumber != null)
+        ? Number(snap.data().lastPhoneNumber)
+        : 0;
+      const next = current + 1;
+      transaction.set(counterRef, { lastPhoneNumber: next, updatedAt: serverTimestamp() });
+      return next;
+    });
+    return String(nextNum).padStart(6, '0');
+  }
+
+  /**
+   * التحقق من عدم وجود هاتف بنفس رقم الباركود (لتوحيد النوع: مقارنة كنص).
+   */
+  async isPhoneNumberTaken(phoneNumber) {
+    const q = query(
+      collection(this.db, 'phones'),
+      where('phone_number', '==', String(phoneNumber))
+    );
+    const snap = await getDocs(q);
+    return !snap.empty;
+  }
+
   async addPhone(phoneData) {
     try {
+      const pn = String(phoneData.phone_number ?? '').trim();
+      if (!pn) {
+        throw new Error('رقم الباركود (phone_number) مطلوب');
+      }
+      const taken = await this.isPhoneNumberTaken(pn);
+      if (taken) {
+        throw new Error('رقم الباركود مستخدم مسبقاً. يرجى استخدام رقم آخر أو تحديث الصفحة.');
+      }
       const docRef = await addDoc(collection(this.db, 'phones'), {
         ...phoneData,
+        phone_number: pn,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
-      console.log('✅ Phone added with ID:', docRef.id);
+      console.log('✅ Phone added with ID:', docRef.id, 'phone_number:', pn);
       return docRef.id;
     } catch (error) {
       console.error('❌ Error adding phone:', error);
