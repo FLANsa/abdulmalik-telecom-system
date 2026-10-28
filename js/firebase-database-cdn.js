@@ -192,6 +192,59 @@ class FirebaseDatabase {
     }
   }
 
+  /**
+   * حفظ البيع وخصم مخزون الإكسسوارات في معاملة واحدة.
+   * تمنع المعاملة بيع كمية غير متاحة أو خصم المخزون إذا فشل إنشاء الفاتورة.
+   */
+  async createSaleWithAccessoryStock(saleData) {
+    const accessoryQuantities = new Map();
+    for (const item of saleData.items || []) {
+      if (item.type !== 'accessory') continue;
+      const quantity = Number(item.quantity) || 0;
+      if (!item.id || quantity <= 0) continue;
+      accessoryQuantities.set(item.id, (accessoryQuantities.get(item.id) || 0) + quantity);
+    }
+
+    const saleRef = doc(collection(this.db, 'sales'));
+    await runTransaction(this.db, async (transaction) => {
+      const stockUpdates = [];
+      for (const [accessoryId, quantity] of accessoryQuantities) {
+        const accessoryRef = doc(this.db, 'accessories', accessoryId);
+        const accessorySnap = await transaction.get(accessoryRef);
+        if (!accessorySnap.exists()) {
+          throw new Error('لم يتم العثور على أحد الإكسسوارات في المخزون');
+        }
+
+        const accessory = accessorySnap.data();
+        const currentStock = Number(accessory.quantity_in_stock ?? accessory.quantity ?? 0);
+        if (currentStock < quantity) {
+          throw new Error(`الكمية المتاحة من ${accessory.name || 'الإكسسوار'} غير كافية`);
+        }
+
+        const remainingStock = currentStock - quantity;
+        stockUpdates.push({ accessoryRef, remainingStock });
+      }
+
+      // يجب تنفيذ كل القراءات قبل أي كتابة داخل معاملة Firestore.
+      for (const { accessoryRef, remainingStock } of stockUpdates) {
+        transaction.update(accessoryRef, {
+          quantity_in_stock: remainingStock,
+          quantity: remainingStock,
+          updatedAt: serverTimestamp()
+        });
+      }
+
+      transaction.set(saleRef, {
+        ...saleData,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    });
+
+    console.log('✅ Sale and accessory stock saved atomically:', saleRef.id);
+    return saleRef.id;
+  }
+
   async getSales() {
     try {
       const salesSnapshot = await getDocs(

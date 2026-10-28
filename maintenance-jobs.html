@@ -1064,7 +1064,7 @@
             }
 
             // تأكيد توفر البيانات الأساسية
-            if (!totalPartCost || !job.amountCharged || !job.techId) {
+            if (!job.amountCharged || !job.techId) {
                 showAlert('error', 'يرجى التأكد من ملء جميع البيانات المطلوبة قبل إتمام العملية');
                 return;
             }

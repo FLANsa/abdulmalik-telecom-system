@@ -931,14 +931,15 @@
       };
   
       try {
-        // تقليل مخزون الأكسسوارات المباعة
-        await updateAccessoryStock();
-
         if (window.storage && window.storage.isFirebaseAvailable) {
-          const saleId = await window.storage.addSale?.(saleData);
+          // تحفظ الفاتورة وتخصم المخزون في معاملة Firestore واحدة.
+          const saleId = await window.storage.createSaleWithAccessoryStock?.(saleData);
           if (!saleId) throw new Error('فشل حفظ البيع في Firebase');
           saleData.id = saleId;
+          await loadDataFromFirebase();
         } else {
+          // وضع العمل المحلي لا يدعم معاملات مشتركة بين السجل والمخزون.
+          await updateAccessoryStock();
           const sales = JSON.parse(localStorage.getItem('sales') || '[]');
           saleData.id = Date.now().toString();
           sales.push(saleData);

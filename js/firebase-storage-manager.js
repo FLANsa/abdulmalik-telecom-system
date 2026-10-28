@@ -344,6 +344,20 @@ class FirebaseStorageManager {
     return this.setSales(sales);
   }
 
+  async createSaleWithAccessoryStock(sale) {
+    if (!this.isFirebaseAvailable) {
+      return null;
+    }
+
+    try {
+      sale.date_created = new Date();
+      return await this.firebaseDB.createSaleWithAccessoryStock(sale);
+    } catch (error) {
+      console.error('Error creating sale with accessory stock update in Firebase:', error);
+      throw error;
+    }
+  }
+
   async updateSale(saleId, updatedSale) {
     if (this.isFirebaseAvailable) {
       try {
